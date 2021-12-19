@@ -73,7 +73,6 @@ class Server:
         sort_players = sorted(
             self.players.values(),
             key=operator.attrgetter('score'),
-            reverse=True
         )
         for x, player in enumerate(sort_players):
             self.balls_collision(player)
@@ -85,7 +84,6 @@ class Server:
                 player.position.x, ball.position.x,
                 player.position.y, ball.position.y
             )
-            print(player.score)
             if dis <= self.START_RADIUS + player.score:
                 player.score = player.score + 0.5
                 self.balls.remove(ball)
@@ -96,7 +94,6 @@ class Server:
                 player.position.x, next_player.position.x,
                 player.position.y, next_player.position.y
             )
-
             if dis < next_player.score - player.score * 0.85:
                 next_player.score = math.sqrt(
                     next_player.score ** 2 + player.score ** 2

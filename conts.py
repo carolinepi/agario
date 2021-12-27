@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 PORT = 5555
 HOST = '127.0.1.1'
@@ -17,9 +17,7 @@ class Color(Enum):
 
 
 class COMMANDS(Enum):
-    move = auto()
-    jump = auto()
-    get = auto()
-    id = auto()
-
-
+    move = 'move'
+    jump = 'jump'
+    get = 'get'
+    id = 'id'

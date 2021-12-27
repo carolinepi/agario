@@ -12,13 +12,13 @@ from models.ball import Ball
 from conts import WIDTH, HEIGHT, PORT
 from models.player import Player
 from models.position import Position
-from utils import get_distance
+from utils import get_distance, get_random_color
 
 
 class Server:
     ROUND_TIME = 60 * 5
-    MASS_LOSS_TIME = 7
-    BALL_RADIUS = 6
+    MASS_LOSS_TIME = 20
+    BALL_RADIUS = 5
     START_RADIUS = 8
 
     def __init__(self):
@@ -62,7 +62,7 @@ class Server:
                     random.randrange(0, WIDTH), player.position.x,
                     random.randrange(0, HEIGHT), player.position.y
                 )
-                if dis <= self.START_RADIUS + player.score:
+                if dis <= player.START_RADIUS + player.score:
                     stop = False
                     break
             if stop:
@@ -84,7 +84,7 @@ class Server:
                 player.position.x, ball.position.x,
                 player.position.y, ball.position.y
             )
-            if dis <= self.START_RADIUS + player.score:
+            if dis <= player.START_RADIUS + player.score:
                 player.score = player.score + 0.5
                 self.balls.remove(ball)
 
@@ -117,7 +117,7 @@ class Server:
                         x, player.position.x,
                         y, player.position.y
                     )
-                    if dis <= self.START_RADIUS + player.score:
+                    if dis <= player.START_RADIUS + player.score:
                         stop = False
                 if stop:
                     break
@@ -134,7 +134,9 @@ class Server:
         player = Player(
             id=current_id,
             position=start_position,
-            name=name
+            name=name,
+            color=get_random_color()
+
         )
         self.players[current_id] = player
 
@@ -175,13 +177,14 @@ class Server:
                         (self.balls, self.players, self.game_time)
                     )
 
+                elif data.split(' ')[0] == 'jump':
+                    player.generate_player_addition(data.split(' ')[1])
+                    send_data = pickle.dumps(
+                        (self.balls, self.players, self.game_time)
+                    )
+
                 elif data.split(' ')[0] == 'id':
                     send_data = str.encode(str(current_id))
-
-                # elif data.split(' ')[0] == 'jump':
-                #     send_data = pickle.dumps(
-                #         (self.balls, self.players, game_time)
-                #     )
                 elif data.split(' ')[0] == 'get':
                     send_data = pickle.dumps(
                         (self.balls, self.players, self.game_time)

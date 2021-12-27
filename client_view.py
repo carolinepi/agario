@@ -24,7 +24,10 @@ class ClientView:
         while self.start:
             player = players[self.current_id]
             clock.tick(30)
-            vel = START_VEL - round(player.score / 14)
+            if player.addition:
+                vel = START_VEL - round(player.score // 2 / 14)
+            else:
+                vel = START_VEL - round(player.score / 14)
             if vel <= 1:
                 vel = 1
 
@@ -58,6 +61,17 @@ class ClientView:
                     )
 
             data = f'move {player.position.x} {player.position.y}'
+
+            if keys[pygame.K_SPACE]:
+                if player.score > 35 and len(player.addition) == 0:
+                    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                        data = f'jump down'
+                    if keys[pygame.K_UP] or keys[pygame.K_w]:
+                        data = f'jump up'
+                    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                        data = 'jump right'
+                    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                        data = 'jump left'
 
             balls, players, game_time = self.server.send(data)
 

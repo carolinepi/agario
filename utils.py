@@ -6,7 +6,8 @@ from conts import Color
 
 
 def get_random_color():
-    return random.choice(list(Color))
+    colors = [i for i in Color if i != Color.WHITE]
+    return random.choice(colors)
 
 
 def get_distance(

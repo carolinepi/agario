@@ -33,11 +33,22 @@ def redraw_window(
         reverse=True
     )
     for player in sort_players:
-        pygame.draw.circle(
-            window, player.color,
-            (player.position.x, player.position.y),
+        size = (
             PLAYER_RADIUS + round(player.score)
+            if len(player.addition) == 0
+            else PLAYER_RADIUS + round(player.score // 2)
         )
+        pygame.draw.circle(
+            window, player.color.value,
+            (player.position.x, player.position.y),
+            size
+        )
+        for player_add in player.addition:
+            pygame.draw.circle(
+                window, player.color.value,
+                (player_add.position.x, player_add.position.y),
+                round(player.score // 2)
+            )
 
         text = NAME_FONT.render(player.name, 1, (0, 0, 0))
         window.blit(text, (

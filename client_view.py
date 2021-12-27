@@ -4,9 +4,9 @@ with contextlib.redirect_stdout(None):
     import pygame
 
 from sockets.client import ClientSocket
-from conts import WIDTH, HEIGHT, START_VEL, PLAYER_RADIUS
+from conts import WIDTH, HEIGHT, START_VEL, PLAYER_RADIUS, ROUND_TIME, COMMANDS
 from models.position import Position
-from views.window_view import redraw_window
+from views.window_view import redraw_window, render_score
 
 
 class ClientView:
@@ -17,10 +17,9 @@ class ClientView:
         self.window = None
 
     def main(self) -> None:
-        balls, players, game_time = self.server.send('get')
+        balls, players, game_time = self.server.send(COMMANDS.get.value)
 
         clock = pygame.time.Clock()
-
         while self.start:
             player = players[self.current_id]
             clock.tick(30)
@@ -60,18 +59,18 @@ class ClientView:
                         y=player.position.y + vel
                     )
 
-            data = f'move {player.position.x} {player.position.y}'
+            data = f'{COMMANDS.move.value} {player.position.x} {player.position.y}'
 
             if keys[pygame.K_SPACE]:
                 if player.score > 35 and len(player.addition) == 0:
                     if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-                        data = f'jump down'
+                        data = f'{COMMANDS.jump.value} down'
                     if keys[pygame.K_UP] or keys[pygame.K_w]:
-                        data = f'jump up'
+                        data = f'{COMMANDS.jump.value} up'
                     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                        data = 'jump right'
+                        data = f'{COMMANDS.jump.value} right'
                     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                        data = 'jump left'
+                        data = f'{COMMANDS.jump.value} left'
 
             balls, players, game_time = self.server.send(data)
 
@@ -86,6 +85,14 @@ class ClientView:
             redraw_window(
                 players, balls, game_time, player.score, self.window
             )
+
+            if game_time >= ROUND_TIME:
+                render_score(players, self.window)
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        self.server.send(COMMANDS.replay.value)
+                        self.start = True
+
             pygame.display.update()
 
         self.server.disconnect()

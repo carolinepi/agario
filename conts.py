@@ -7,6 +7,7 @@ WIDTH, HEIGHT = 1600, 830
 PLAYER_RADIUS = 10
 START_VEL = 9
 BALL_RADIUS = 5
+ROUND_TIME = 60 * 5
 
 
 class Color(Enum):
@@ -21,3 +22,4 @@ class COMMANDS(Enum):
     jump = 'jump'
     get = 'get'
     id = 'id'
+    replay = 'replay'

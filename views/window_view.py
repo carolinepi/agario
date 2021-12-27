@@ -1,7 +1,10 @@
 import contextlib
 import operator
+from typing import List, Dict
 
 from conts import WIDTH, Color, BALL_RADIUS, PLAYER_RADIUS
+from models.ball import Ball
+from models.player import Player
 from utils import convert_time
 
 with contextlib.redirect_stdout(None):
@@ -16,7 +19,11 @@ SCORE_FONT = pygame.font.SysFont('comicsans', 26)
 
 
 def redraw_window(
-    players, balls, game_time, score, window
+    players: Dict[int, Player],
+    balls: List[Ball],
+    game_time,
+    score: int,
+    window
 ):
     window.fill(Color.WHITE.value)
 
@@ -76,3 +83,12 @@ def redraw_window(
 
     text = TIME_FONT.render('Score: ' + str(round(score)), 1, (0, 0, 0))
     window.blit(text, (10, 15 + text.get_height()))
+
+
+def render_score(players: Dict[int, Player], window):
+    window.fill(Color.WHITE.value)
+    height = 150
+    for player in players.values():
+        text = SCORE_FONT.render(f'{player.name}: {player.score}', 1, (0, 0, 0))
+        window.blit(text, (100, height))
+        height += text.get_height()

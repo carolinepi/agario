@@ -9,14 +9,13 @@ import time
 from typing import List
 
 from models.ball import Ball
-from conts import WIDTH, HEIGHT, PORT
+from conts import WIDTH, HEIGHT, PORT, ROUND_TIME, Color, COMMANDS
 from models.player import Player
 from models.position import Position
 from utils import get_distance, get_random_color
 
 
 class Server:
-    ROUND_TIME = 60 * 5
     MASS_LOSS_TIME = 20
     BALL_RADIUS = 5
     START_RADIUS = 8
@@ -122,8 +121,12 @@ class Server:
                 if stop:
                     break
             self.balls.append(
-                Ball(position=Position(x, y), color=(255, 0, 0))
+                Ball(position=Position(x, y), color=Color.RED.value)
             )
+
+    def recreate(self):
+        for player in self.players.values():
+            player.recreate(self.get_player_start_location())
 
     def threaded_client(self, conn: socket.socket, current_id: int) -> None:
         data = conn.recv(16)
@@ -145,7 +148,7 @@ class Server:
         while True:
             if self.start:
                 self.game_time = round(time.time() - self.start_time)
-                if self.game_time >= self.ROUND_TIME:
+                if self.game_time >= ROUND_TIME:
                     self.start = False
                 else:
                     if self.game_time // self.MASS_LOSS_TIME == self.next_round:
@@ -155,13 +158,12 @@ class Server:
 
             try:
                 data = conn.recv(32)
-
                 if not data:
                     break
 
                 data = data.decode('utf-8')
 
-                if data.split(' ')[0] == 'move':
+                if data.split(' ')[0] == COMMANDS.move.value:
                     split_data = data.split(' ')
                     x = int(split_data[1])
                     y = int(split_data[2])
@@ -177,25 +179,32 @@ class Server:
                         (self.balls, self.players, self.game_time)
                     )
 
-                elif data.split(' ')[0] == 'jump':
+                elif data.split(' ')[0] == COMMANDS.jump.value:
                     player.generate_player_addition(data.split(' ')[1])
                     send_data = pickle.dumps(
                         (self.balls, self.players, self.game_time)
                     )
 
-                elif data.split(' ')[0] == 'id':
+                elif data.split(' ')[0] == COMMANDS.id.value:
                     send_data = str.encode(str(current_id))
-                elif data.split(' ')[0] == 'get':
+
+                elif data.split(' ')[0] == COMMANDS.get.value:
                     send_data = pickle.dumps(
                         (self.balls, self.players, self.game_time)
                     )
 
+                elif data.split(' ')[0] == COMMANDS.replay.value:
+                    self.start = True
+                    self.start_time = time.time()
+                    self.recreate()
+                    send_data = pickle.dumps(
+                        (self.balls, self.players, self.game_time)
+                    )
                 conn.send(send_data)
 
             except Exception as e:
                 print(e)
                 break
-
             time.sleep(0.001)
 
         print('[DISCONNECT] Name:', name, ', Client Id:', current_id,
